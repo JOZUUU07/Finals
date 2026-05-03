@@ -1,1 +1,179 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+struct File {
+    char name[50];
+    int size;
+    struct File* next;
+};
+
+// HEAD POINTER
+struct File* head = NULL;
+
+// STACK for undo delete
+struct File* deletedStack = NULL;
+
+// ADD FILE (Linked List)
+void addFile(char name[], int size) {
+    struct File* newFile = (struct File*)malloc(sizeof(struct File));
+    strcpy(newFile->name, name);
+    newFile->size = size;
+    newFile->next = head;
+    head = newFile;
+}
+
+// VIEW FILES
+void viewFiles() {
+    struct File* temp = head;
+    if (temp == NULL) {
+        printf("No files.\n");
+        return;
+    }
+    while (temp != NULL) {
+        printf("Name: %s | Size: %d\n", temp->name, temp->size);
+        temp = temp->next;
+    }
+}
+
+// SEARCH FILE (Linear Search)
+void searchFile(char name[]) {
+    struct File* temp = head;
+    while (temp != NULL) {
+        if (strcmp(temp->name, name) == 0) {
+            printf("Found: %s | Size: %d\n", temp->name, temp->size);
+            return;
+        }
+        temp = temp->next;
+    }
+    printf("File not found.\n");
+}
+
+// DELETE FILE + PUSH TO STACK
+void deleteFile(char name[]) {
+    struct File *temp = head, *prev = NULL;
+
+    while (temp != NULL) {
+        if (strcmp(temp->name, name) == 0) {
+
+            // push to stack
+            temp->next = deletedStack;
+            deletedStack = temp;
+
+            if (prev == NULL)
+                head = temp->next;
+            else
+                prev->next = temp->next;
+
+            printf("File deleted.\n");
+            return;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("File not found.\n");
+}
+
+// UNDO DELETE (Stack POP)
+void undoDelete() {
+    if (deletedStack == NULL) {
+        printf("Nothing to undo.\n");
+        return;
+    }
+
+    struct File* temp = deletedStack;
+    deletedStack = deletedStack->next;
+
+    temp->next = head;
+    head = temp;
+
+    printf("Undo successful.\n");
+}
+
+// SORT FILES (Bubble Sort using Array)
+void sortFiles() {
+    int count = 0, i, j;
+    struct File* temp = head;
+
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+
+    if (count < 2) return;
+
+    struct File* arr[count];
+    temp = head;
+
+    for (i = 0; i < count; i++) {
+        arr[i] = temp;
+        temp = temp->next;
+    }
+
+    for (i = 0; i < count - 1; i++) {
+        for (j = 0; j < count - i - 1; j++) {
+            if (strcmp(arr[j]->name, arr[j+1]->name) > 0) {
+                struct File* t = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = t;
+            }
+        }
+    }
+
+    printf("Sorted Files:\n");
+    for (i = 0; i < count; i++) {
+        printf("%s (%d)\n", arr[i]->name, arr[i]->size);
+    }
+}
+
+// MAIN MENU
+int main() {
+    int choice, size;
+    char name[50];
+
+    while (1) {
+        printf("\n1. Add File\n2. View Files\n3. Search File\n4. Delete File\n5. Undo Delete\n6. Sort Files\n0. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter file name: ");
+                scanf("%s", name);
+                printf("Enter size: ");
+                scanf("%d", &size);
+                addFile(name, size);
+                break;
+
+            case 2:
+                viewFiles();
+                break;
+
+            case 3:
+                printf("Enter name to search: ");
+                scanf("%s", name);
+                searchFile(name);
+                break;
+
+            case 4:
+                printf("Enter name to delete: ");
+                scanf("%s", name);
+                deleteFile(name);
+                break;
+
+            case 5:
+                undoDelete();
+                break;
+
+            case 6:
+                sortFiles();
+                break;
+
+            case 0:
+                return 0;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+}
