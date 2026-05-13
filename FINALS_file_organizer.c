@@ -320,17 +320,25 @@ int main() {
 
         switch (choice) {
 
-            case 1:
+           case 1: {
 
-                printf("Enter file name: ");
-                scanf("%s", name);
+    char sizeInput[20];
+    char extra;
 
-                printf("Enter file size (MB): ");
-                scanf("%d", &size);
+    printf("Enter file name: ");
+    scanf("%s", name);
 
-                addFile(name, size);
-                break;
+    printf("Enter file size (MB): ");
 
+    // Read as string first
+    scanf("%s", sizeInput);
+
+    // Check if input is a pure integer
+    if (sscanf(sizeInput, "%d%c", &size, &extra) != 1) {
+
+        printf("Error: Please enter numbers only for file size.\n");
+        break;
+    }
             case 2:
 
                 viewFiles();
